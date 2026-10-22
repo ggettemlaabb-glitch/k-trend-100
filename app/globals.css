@@ -1,0 +1,24 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #090b10;
+  color: #f4f6fb;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 900;
+}
+
+p {
+  color: #a0a8b8;
+  line-height: 1.8;
+}
