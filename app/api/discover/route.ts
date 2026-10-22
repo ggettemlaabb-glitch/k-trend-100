@@ -27,8 +27,12 @@ export async function GET() {
       };
       if (item.title) items.push(item);
     }
+    const uniqueItems = Array.from(new Map(items.map(item => [item.title.toLocaleLowerCase("ko-KR"), item])).values()).slice(0, 100);
     return NextResponse.json({
-      items,
+      items: uniqueItems,
+      count: uniqueItems.length,
+      limit: 100,
+      fetchedAt: new Date().toISOString(),
       note: "Google Trends 대한민국 공개 RSS의 급상승 검색어입니다. 공개 피드가 제공하는 일부 항목만 표시하며 전체 검색량 TOP100이 아닙니다.",
       fetchedAt: new Date().toISOString()
     });
