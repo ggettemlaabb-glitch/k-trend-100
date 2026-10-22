@@ -21,6 +21,7 @@ export default function Home() {
   const [period, setPeriod] = useState("date");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [results, setResults] = useState<Result[]>([]);
+  const [hoveredPoint, setHoveredPoint] = useState<{ name: string; period: string; ratio: number } | null>(null);
   const [terms, setTerms] = useState("");
   const [loading, setLoading] = useState(false);
   const [compareLoading, setCompareLoading] = useState(false);
@@ -119,7 +120,12 @@ export default function Home() {
         <button onClick={compare} disabled={compareLoading} className="mt-4 w-full rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{compareLoading ? "분석 중..." : "네이버 관심도 비교하기"}</button>
         {ranked.length > 0 && <div className="mt-7 space-y-6">
           <div><h3 className="font-bold">검색 관심도 변화</h3><p className="mt-1 text-xs text-slate-400">네이버 데이터랩 상대지수 · 최고값 100 기준</p>
-            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#080b14] p-3">
+            <div className="relative mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#080b14] p-3">
+              {hoveredPoint && <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-lg border border-cyan-400/40 bg-slate-900/95 px-4 py-3 text-sm shadow-xl">
+                <p className="font-bold text-cyan-300">{hoveredPoint.name}</p>
+                <p className="mt-1 text-slate-200">{hoveredPoint.period}</p>
+                <p className="mt-1 text-slate-400">관심도 <b className="text-white">{hoveredPoint.ratio.toFixed(1)}</b></p>
+              </div>}
               <svg viewBox="0 0 1000 250" role="img" aria-label="검색어별 상대 관심도 변화 그래프" className="h-64 min-w-[560px] w-full">
                 {[0,25,50,75,100].map(v => <g key={v}><line x1="0" x2="1000" y1={220-v*2} y2={220-v*2} stroke="rgba(255,255,255,0.10)" strokeDasharray="5 7" /><text x="4" y={215-v*2} fill="#94a3b8" fontSize="12">{v}</text></g>)}
                 {results.map((series,i) => <g key={series.title}>
@@ -127,7 +133,12 @@ export default function Home() {
                   {series.data.map((point,index) => {
                     const x = chartLength <= 1 ? 0 : (index / (chartLength - 1)) * 1000;
                     const y = 220 - (Math.max(0, Math.min(100, point.ratio)) / 100) * 200;
-                    return <circle key={`${series.title}-${point.period}-${index}`} cx={x} cy={y} r="7" fill={lineColors[i % lineColors.length]} stroke="#080b14" strokeWidth="3" className="cursor-crosshair">
+                    return <circle key={`${series.title}-${point.period}-${index}`} cx={x} cy={y} r="9" fill={lineColors[i % lineColors.length]} stroke="#080b14" strokeWidth="3" className="cursor-crosshair"
+                      onMouseEnter={() => setHoveredPoint({ name: series.title, period: point.period, ratio: point.ratio })}
+                      onMouseLeave={() => setHoveredPoint(null)}
+                      onFocus={() => setHoveredPoint({ name: series.title, period: point.period, ratio: point.ratio })}
+                      onBlur={() => setHoveredPoint(null)}
+                      tabIndex={0}>
                       <title>{series.title} · {point.period} · 관심도 {point.ratio.toFixed(1)}</title>
                     </circle>;
                   })}
