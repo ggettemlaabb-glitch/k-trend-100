@@ -124,14 +124,14 @@ export default function Home() {
       </div>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-[#111827] p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold">오늘의 공개 급상승 검색어</h2><p className="mt-1 text-sm text-slate-400">Google Trends 대한민국 공개 피드 · 최대 100개 표시</p></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold">오늘의 공개 급상승 검색어</h2><p className="mt-1 text-sm text-slate-400">Google Trends 대한민국 공개 급상승 피드 · 제공된 순서대로 표시</p></div>
           <button onClick={collect} disabled={loading} className="rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? "수집 중..." : "인기 검색어 수집하기"}</button></div>
         <p className="mt-3 text-xs text-cyan-300" aria-live="polite">{debugStatus}</p>
         {notice && <p className="mt-4 text-xs text-slate-400">{notice}</p>}
-        {candidates.length > 0 && <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-xs text-slate-400"><span>실제 수집 항목 <b className="text-cyan-300">{candidates.length}개</b> / 최대 100개</span><span>{fetchedAt ? `수집 시각 ${new Date(fetchedAt).toLocaleString("ko-KR")}` : "수집 완료"}</span></div>}
+        {candidates.length > 0 && <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-xs text-slate-400"><span>실제 수집 항목 <b className="text-cyan-300">{candidates.length}개</b> · 공개 피드 순서</span><span>{fetchedAt ? `수집 시각 ${new Date(fetchedAt).toLocaleString("ko-KR")}` : "수집 완료"}</span></div>}
         {candidates.length === 0 ? <div className="py-10 text-center text-sm text-slate-500">{loading ? "Google Trends 데이터를 불러오는 중입니다..." : debugStatus.startsWith("요청 성공") ? "피드는 연결됐지만 표시할 검색어가 없습니다. 잠시 후 다시 시도해 주세요." : "버튼을 눌러 공개 인기 검색어를 수집하세요."}</div> :
-          <div className="mt-5 divide-y divide-white/10">{candidates.map((x,i) => <div key={x.title} className="flex items-center justify-between gap-4 py-3"><div className="flex min-w-0 items-center gap-4"><b className="text-cyan-400">{String(i+1).padStart(2,"0")}</b><span className="truncate font-semibold">{x.title}</span></div><span className="shrink-0 text-xs text-slate-400">{x.traffic || "급상승"}</span></div>)}</div>}
-        <p className="mt-4 text-xs leading-6 text-amber-300/80">현재는 Google 공개 피드에서 실제 제공된 항목만 표시합니다. 피드가 100개 미만을 제공하면 부족한 항목을 임의로 채우지 않습니다. 한국 전체 검색량 TOP100이나 네이버 순위가 아닙니다.</p>
+          <div className="mt-5 divide-y divide-white/10">{candidates.map((x,i) => <div key={x.title} className="flex items-center justify-between gap-4 py-3"><div className="flex min-w-0 items-center gap-4"><b className="text-cyan-400">{String(i+1).padStart(2,"0")}</b><div className="min-w-0"><span className="block truncate font-semibold">{x.title}</span><span className="mt-1 block text-[11px] text-slate-500">{x.published ? new Date(x.published).toLocaleString("ko-KR") : "게시 시각 정보 없음"}</span></div></div><span className="shrink-0 text-xs text-slate-400">{x.traffic || "급상승"}</span></div>)}</div>}
+        <p className="mt-4 text-xs leading-6 text-amber-300/80">순위 번호는 Google 공개 피드가 반환한 순서입니다. 수집된 항목 수와 게시 시각을 함께 표시하며, 한국 전체 검색량 TOP100이나 네이버 순위로 해석하면 안 됩니다.</p>
       </div>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-[#111827] p-6">
