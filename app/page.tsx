@@ -68,6 +68,15 @@ export default function Home() {
   const ranked = results.map(x => ({ name: x.title, value: Math.max(0, ...x.data.map(d => d.ratio)) }))
     .sort((a,b) => b.value-a.value);
 
+  const chartLength = Math.max(0, ...results.map(x => x.data.length));
+  const chartLabels = results[0]?.data || [];
+  const lineColors = ["#22d3ee", "#a78bfa", "#34d399", "#fbbf24", "#fb7185"];
+  const chartPoints = (data: Result["data"]) => data.map((point, index) => {
+    const x = chartLength <= 1 ? 0 : (index / (chartLength - 1)) * 1000;
+    const y = 220 - (Math.max(0, Math.min(100, point.ratio)) / 100) * 200;
+    return `${x},${y}`;
+  }).join(" ");
+
   return <main className="min-h-screen bg-[#080b14] text-white">
     <header className="border-b border-white/10 px-6 py-5"><div className="mx-auto flex max-w-7xl items-center justify-between">
       <div><div className="text-2xl font-black">K-TREND <span className="text-cyan-400">100</span></div><p className="mt-1 text-xs text-slate-400">KOREA SEARCH INTELLIGENCE</p></div>
@@ -104,7 +113,27 @@ export default function Home() {
         <label className="mb-2 block text-sm text-slate-400">비교할 검색어 (쉼표 구분, 최대 5개)</label>
         <textarea value={terms} onChange={e=>setTerms(e.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-[#080b14] p-4 text-sm outline-none focus:border-cyan-400" placeholder="예: 아이폰, 갤럭시, 챗GPT, 다이소, 쿠팡" />
         <button onClick={compare} disabled={compareLoading} className="mt-4 w-full rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{compareLoading ? "분석 중..." : "네이버 관심도 비교하기"}</button>
-        {ranked.length > 0 && <div className="mt-7 space-y-5"><h3 className="font-bold">상대 관심도 순위</h3>{ranked.map((x,i)=><div key={x.name}><div className="mb-2 flex justify-between"><span>{i+1}. {x.name}</span><span className="text-slate-400">{x.value.toFixed(1)}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-cyan-400" style={{width:`${x.value}%`}} /></div></div>)}</div>}
+        {ranked.length > 0 && <div className="mt-7 space-y-6">
+          <div><h3 className="font-bold">검색 관심도 변화</h3><p className="mt-1 text-xs text-slate-400">네이버 데이터랩 상대지수 · 최고값 100 기준</p>
+            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#080b14] p-3">
+              <svg viewBox="0 0 1000 250" role="img" aria-label="검색어별 상대 관심도 변화 그래프" className="h-64 min-w-[560px] w-full">
+                {[0,25,50,75,100].map(v => <g key={v}><line x1="0" x2="1000" y1={220-v*2} y2={220-v*2} stroke="rgba(255,255,255,0.10)" strokeDasharray="5 7" /><text x="4" y={215-v*2} fill="#94a3b8" fontSize="12">{v}</text></g>)}
+                {results.map((series,i) => <polyline key={series.title} points={chartPoints(series.data)} fill="none" stroke={lineColors[i % lineColors.length]} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />)}
+              </svg>
+              <div className="mt-2 flex flex-wrap gap-4">{results.map((series,i)=><span key={series.title} className="flex items-center gap-2 text-xs text-slate-300"><i className="h-2.5 w-2.5 rounded-full" style={{backgroundColor:lineColors[i % lineColors.length]}} />{series.title}</span>)}</div>
+              <div className="mt-3 flex justify-between text-[11px] text-slate-500"><span>{chartLabels[0]?.period || ""}</span><span>{chartLabels[chartLabels.length-1]?.period || ""}</span></div>
+            </div>
+          </div>
+          <div><h3 className="font-bold">상대 관심도 순위</h3><p className="mt-1 text-xs text-slate-400">선택 기간 중 각 검색어의 최고 관심도 기준</p>
+            <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
+              {ranked.map((x,i)=><div key={x.name} className="flex items-center gap-3 border-b border-white/10 px-4 py-3 last:border-0">
+                <b className="w-7 text-cyan-300">{String(i+1).padStart(2,"0")}</b><span className="min-w-0 flex-1 truncate font-medium">{x.name}</span>
+                <span className="text-sm tabular-nums text-slate-300">{x.value.toFixed(1)}</span>
+                <div className="h-2 w-24 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-cyan-400" style={{width:`${x.value}%`}} /></div>
+              </div>)}
+            </div>
+          </div>
+        </div>}
       </div>
       {error && <p className="mt-5 rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
       <footer className="mt-10 border-t border-white/10 py-6 text-center text-xs leading-6 text-slate-500">K-TREND 100 · Korea Search Intelligence<br/>공개 급상승 피드와 네이버 검색 상대지수는 전체 검색량과 다를 수 있습니다.</footer>
