@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -12,15 +13,28 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { terms, period, startDate, endDate } = await request.json();
+    const body: {
+      terms?: string[];
+      period?: string;
+      startDate?: string;
+      endDate?: string;
+    } = await request.json();
 
-    const keywords = [...new Set(
-      (terms || []).map((x: string) => String(x).trim()).filter(Boolean)
-    )].slice(0, 5);
+    const terms = Array.isArray(body.terms) ? body.terms : [];
+    const keywords = Array.from(
+      new Set(terms.map((x) => String(x).trim()).filter(Boolean))
+    ).slice(0, 5);
 
     if (!keywords.length) {
-      return NextResponse.json({ error: "검색어를 입력해 주세요." }, { status: 400 });
+      return NextResponse.json(
+        { error: "검색어를 입력해 주세요." },
+        { status: 400 }
+      );
     }
+
+    const period = ["date", "week", "month"].includes(body.period || "")
+      ? body.period!
+      : "date";
 
     const response = await fetch(
       "https://naverapihub.apigw.ntruss.com/search-trend/v1/search",
@@ -32,10 +46,10 @@ export async function POST(request: Request) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          startDate,
-          endDate,
+          startDate: body.startDate,
+          endDate: body.endDate,
           timeUnit: period,
-          keywordGroups: keywords.map((term: string) => ({
+          keywordGroups: keywords.map((term) => ({
             groupName: term,
             keywords: [term]
           }))
@@ -62,7 +76,6 @@ export async function POST(request: Request) {
       rows,
       note: "네이버 검색 상대지수입니다. 실제 검색 횟수가 아닙니다."
     });
-
   } catch {
     return NextResponse.json(
       { error: "데이터 처리 중 오류가 발생했습니다." },
