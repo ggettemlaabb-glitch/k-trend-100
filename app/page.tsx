@@ -140,11 +140,16 @@ export default function Home() {
         <label className="mb-2 block text-sm text-slate-400">비교할 검색어 (쉼표 구분, 최대 5개)</label>
         <textarea value={terms} onChange={e=>setTerms(e.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-[#080b14] p-4 text-sm outline-none focus:border-cyan-400" placeholder="예: 아이폰, 갤럭시, 챗GPT, 다이소, 쿠팡" />
         <button onClick={compare} disabled={compareLoading} className="mt-4 w-full rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{compareLoading ? "분석 중..." : "네이버 관심도 비교하기"}</button>
+        <div className="mt-3 flex justify-end">
+          <button type="button" onClick={downloadCsv} disabled={results.length === 0} className="rounded-lg border border-cyan-400/40 px-4 py-2 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-40">
+            비교 결과 CSV 다운로드 ↓
+          </button>
+        </div>
         {ranked.length > 0 && <div className="mt-7 space-y-6">
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><h3 className="font-bold">검색 관심도 변화</h3><p className="mt-1 text-xs text-slate-400">네이버 데이터랩 상대지수 · 최고값 100 기준</p></div>
-              <button type="button" onClick={downloadCsv} className="rounded-lg border border-cyan-400/40 px-4 py-2 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-400/10">CSV 다운로드 ↓</button>
+
             </div>
             <div className="relative mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#080b14] p-3">
               {hoveredPoint && <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-lg border border-cyan-400/40 bg-slate-900/95 px-4 py-3 text-sm shadow-xl">
