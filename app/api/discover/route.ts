@@ -16,7 +16,7 @@ export async function GET() {
     if (!response.ok) return NextResponse.json({ error: "Google Trends 피드를 가져오지 못했습니다." }, { status: 502 });
     const xml = await response.text();
     const items: { title: string; traffic: string; published: string; source: string }[] = [];
-    const itemPattern = /<item>([\\s\\S]*?)<\\/item>/gi;
+    const itemPattern = new RegExp("<item>([\\s\\S]*?)</item>", "gi");
     let match: RegExpExecArray | null;
     while ((match = itemPattern.exec(xml)) !== null) {
       const item = {
