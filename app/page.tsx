@@ -73,6 +73,28 @@ export default function Home() {
     return { name: x.title, value: Math.max(0, ...x.data.map(d => d.ratio)), change };
   }).sort((a,b) => b.value-a.value);
 
+  function downloadCsv() {
+    if (!results.length) return;
+    const periods = Array.from(new Set(results.flatMap(series => series.data.map(point => point.period))));
+    const rows = [["날짜", ...results.map(series => series.title)]];
+    for (const periodLabel of periods) {
+      rows.push([periodLabel, ...results.map(series => {
+        const point = series.data.find(item => item.period === periodLabel);
+        return point ? point.ratio.toFixed(1) : "";
+      })]);
+    }
+    const csv = "\\uFEFF" + rows.map(row => row.map(value => '"' + String(value).replace(/"/g, '""') + '"').join(",")).join("\\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "k-trend-네이버-관심도-비교.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   const chartLength = Math.max(0, ...results.map(x => x.data.length));
   const chartLabels = results[0]?.data || [];
   const lineColors = ["#22d3ee", "#a78bfa", "#34d399", "#fbbf24", "#fb7185"];
@@ -119,7 +141,11 @@ export default function Home() {
         <textarea value={terms} onChange={e=>setTerms(e.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-[#080b14] p-4 text-sm outline-none focus:border-cyan-400" placeholder="예: 아이폰, 갤럭시, 챗GPT, 다이소, 쿠팡" />
         <button onClick={compare} disabled={compareLoading} className="mt-4 w-full rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{compareLoading ? "분석 중..." : "네이버 관심도 비교하기"}</button>
         {ranked.length > 0 && <div className="mt-7 space-y-6">
-          <div><h3 className="font-bold">검색 관심도 변화</h3><p className="mt-1 text-xs text-slate-400">네이버 데이터랩 상대지수 · 최고값 100 기준</p>
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div><h3 className="font-bold">검색 관심도 변화</h3><p className="mt-1 text-xs text-slate-400">네이버 데이터랩 상대지수 · 최고값 100 기준</p></div>
+              <button type="button" onClick={downloadCsv} className="rounded-lg border border-cyan-400/40 px-4 py-2 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-400/10">CSV 다운로드 ↓</button>
+            </div>
             <div className="relative mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#080b14] p-3">
               {hoveredPoint && <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-lg border border-cyan-400/40 bg-slate-900/95 px-4 py-3 text-sm shadow-xl">
                 <p className="font-bold text-cyan-300">{hoveredPoint.name}</p>
