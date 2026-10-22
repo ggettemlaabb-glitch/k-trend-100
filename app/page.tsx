@@ -79,8 +79,12 @@ export default function Home() {
       <p className="mt-4 text-slate-400">공개 트렌드 자료를 수집하고 네이버 검색 관심도를 비교합니다.</p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {[[ "01 / DAILY", "일간 트렌드" ],[ "02 / WEEKLY", "주간 트렌드" ],[ "03 / MONTHLY", "월간 트렌드" ]].map(x =>
-          <div key={x[0]} className="rounded-2xl border border-white/10 bg-[#111827] p-5"><p className="text-xs text-cyan-400">{x[0]}</p><p className="mt-3 text-xl font-bold">{x[1]}</p><p className="mt-1 text-sm text-slate-500">검색 관심도 분석</p></div>)}
+        {[{ id: "date", code: "01 / DAILY", title: "일간 트렌드", detail: "최근 30일 관심도 비교" }, { id: "week", code: "02 / WEEKLY", title: "주간 트렌드", detail: "최근 90일 관심도 비교" }, { id: "month", code: "03 / MONTHLY", title: "월간 트렌드", detail: "최근 12개월 관심도 비교" }].map(x =>
+          <button key={x.id} type="button" onClick={() => setPeriod(x.id)} aria-pressed={period === x.id}
+            className={"rounded-2xl border p-5 text-left transition " + (period === x.id ? "border-cyan-400 bg-cyan-400/10 ring-1 ring-cyan-400/30" : "border-white/10 bg-[#111827] hover:border-cyan-400/50")}>
+            <p className="text-xs text-cyan-400">{x.code}</p><p className="mt-3 text-xl font-bold">{x.title}</p>
+            <p className="mt-1 text-sm text-slate-400">{x.detail}</p><p className="mt-3 text-xs text-cyan-300">{period === x.id ? "선택됨" : "눌러서 기간 선택 →"}</p>
+          </button>) }
       </div>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-[#111827] p-6">
@@ -95,7 +99,7 @@ export default function Home() {
       </div>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-[#111827] p-6">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">네이버 검색 관심도 비교</h2>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold">네이버 검색 관심도 비교</h2><p className="mt-1 text-xs text-slate-400">선택 기간: {period === "date" ? "일간 · 최근 30일" : period === "week" ? "주간 · 최근 90일" : "월간 · 최근 12개월"}</p></div>
           <select value={period} onChange={e=>setPeriod(e.target.value)} className="rounded-lg border border-white/10 bg-[#080b14] px-4 py-2 text-sm"><option value="date">일간</option><option value="week">주간</option><option value="month">월간</option></select></div>
         <label className="mb-2 block text-sm text-slate-400">비교할 검색어 (쉼표 구분, 최대 5개)</label>
         <textarea value={terms} onChange={e=>setTerms(e.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-[#080b14] p-4 text-sm outline-none focus:border-cyan-400" placeholder="예: 아이폰, 갤럭시, 챗GPT, 다이소, 쿠팡" />
