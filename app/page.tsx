@@ -5,6 +5,18 @@ import { useState } from "react";
 type Candidate = { title: string; traffic: string; published: string; source: string };
 type Result = { title: string; data: { period: string; ratio: number }[] };
 
+async function readApiJson(response: Response) {
+  const raw = await response.text();
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const preview = raw.replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").trim().slice(0, 180);
+    throw new Error(
+      `API가 JSON이 아닌 응답을 반환했습니다 (HTTP ${response.status}). Vercel 배포 또는 API 경로를 확인해 주세요. ${preview}`
+    );
+  }
+}
+
 export default function Home() {
   const [period, setPeriod] = useState("date");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -20,7 +32,7 @@ export default function Home() {
     setLoading(true); setError(""); setNotice(""); setDebugStatus("서버에 데이터 수집을 요청했습니다...");
     try {
       const res = await fetch("/api/discover", { cache: "no-store" });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "트렌드 수집에 실패했습니다.");
       setCandidates(data.items || []);
       setNotice(data.note || "");
