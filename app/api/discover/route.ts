@@ -34,7 +34,6 @@ export async function GET() {
       limit: 100,
       fetchedAt: new Date().toISOString(),
       note: "Google Trends 대한민국 공개 RSS의 급상승 검색어입니다. 공개 피드가 제공하는 일부 항목만 표시하며 전체 검색량 TOP100이 아닙니다.",
-      fetchedAt: new Date().toISOString()
     });
   } catch {
     return NextResponse.json({ error: "트렌드 피드 연결 중 오류가 발생했습니다." }, { status: 502 });
