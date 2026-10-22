@@ -5,7 +5,7 @@ function decodeXml(value: string) {
 }
 function tag(xml: string, name: string) {
   const match = xml.match(new RegExp("<(?:[\\w.-]+:)?"+name+"[^>]*>([\\s\\S]*?)</(?:[\\w.-]+:)?"+name+">", "i"));
-  return match ? decodeXml(match[1].replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, "$1").replace(/<[^>]+>/g, "").trim()) : "";
+  return match ? decodeXml(match[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, "").trim()) : "";
 }
 export async function GET() {
   try {
@@ -15,7 +15,7 @@ export async function GET() {
     });
     if (!response.ok) return NextResponse.json({ error: "Google Trends 피드를 가져오지 못했습니다." }, { status: 502 });
     const xml = await response.text();
-    const items = [...xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/gi)].map((m) => ({
+    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].map((m) => ({
       title: tag(m[1], "title"),
       traffic: tag(m[1], "approx_traffic"),
       published: tag(m[1], "pubDate"),
