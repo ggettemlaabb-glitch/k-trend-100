@@ -65,8 +65,12 @@ export default function Home() {
     finally { setCompareLoading(false); }
   }
 
-  const ranked = results.map(x => ({ name: x.title, value: Math.max(0, ...x.data.map(d => d.ratio)) }))
-    .sort((a,b) => b.value-a.value);
+  const ranked = results.map(x => {
+    const latest = x.data[x.data.length - 1]?.ratio ?? 0;
+    const previous = x.data[x.data.length - 2]?.ratio ?? latest;
+    const change = latest - previous;
+    return { name: x.title, value: Math.max(0, ...x.data.map(d => d.ratio)), change };
+  }).sort((a,b) => b.value-a.value);
 
   const chartLength = Math.max(0, ...results.map(x => x.data.length));
   const chartLabels = results[0]?.data || [];
@@ -118,7 +122,16 @@ export default function Home() {
             <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#080b14] p-3">
               <svg viewBox="0 0 1000 250" role="img" aria-label="검색어별 상대 관심도 변화 그래프" className="h-64 min-w-[560px] w-full">
                 {[0,25,50,75,100].map(v => <g key={v}><line x1="0" x2="1000" y1={220-v*2} y2={220-v*2} stroke="rgba(255,255,255,0.10)" strokeDasharray="5 7" /><text x="4" y={215-v*2} fill="#94a3b8" fontSize="12">{v}</text></g>)}
-                {results.map((series,i) => <polyline key={series.title} points={chartPoints(series.data)} fill="none" stroke={lineColors[i % lineColors.length]} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />)}
+                {results.map((series,i) => <g key={series.title}>
+                  <polyline points={chartPoints(series.data)} fill="none" stroke={lineColors[i % lineColors.length]} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                  {series.data.map((point,index) => {
+                    const x = chartLength <= 1 ? 0 : (index / (chartLength - 1)) * 1000;
+                    const y = 220 - (Math.max(0, Math.min(100, point.ratio)) / 100) * 200;
+                    return <circle key={`${series.title}-${point.period}-${index}`} cx={x} cy={y} r="7" fill={lineColors[i % lineColors.length]} stroke="#080b14" strokeWidth="3" className="cursor-crosshair">
+                      <title>{series.title} · {point.period} · 관심도 {point.ratio.toFixed(1)}</title>
+                    </circle>;
+                  })}
+                </g>) }
               </svg>
               <div className="mt-2 flex flex-wrap gap-4">{results.map((series,i)=><span key={series.title} className="flex items-center gap-2 text-xs text-slate-300"><i className="h-2.5 w-2.5 rounded-full" style={{backgroundColor:lineColors[i % lineColors.length]}} />{series.title}</span>)}</div>
               <div className="mt-3 flex justify-between text-[11px] text-slate-500"><span>{chartLabels[0]?.period || ""}</span><span>{chartLabels[chartLabels.length-1]?.period || ""}</span></div>
@@ -128,6 +141,7 @@ export default function Home() {
             <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
               {ranked.map((x,i)=><div key={x.name} className="flex items-center gap-3 border-b border-white/10 px-4 py-3 last:border-0">
                 <b className="w-7 text-cyan-300">{String(i+1).padStart(2,"0")}</b><span className="min-w-0 flex-1 truncate font-medium">{x.name}</span>
+                <span className="text-xs font-semibold tabular-nums" style={{color: x.change > 0 ? "#34d399" : x.change < 0 ? "#fb7185" : "#94a3b8"}}>{x.change > 0 ? "▲ 상승" : x.change < 0 ? "▼ 하락" : "－ 보합"}</span>
                 <span className="text-sm tabular-nums text-slate-300">{x.value.toFixed(1)}</span>
                 <div className="h-2 w-24 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-cyan-400" style={{width:`${x.value}%`}} /></div>
               </div>)}
